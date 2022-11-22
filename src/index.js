@@ -1,13 +1,10 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-// import debounce from 'lodash.debounce';
+
 import ImagesApiService from './js/images-service';
 import { getRefs } from './js/get-refs';
-import debounce from 'lodash.debounce';
 
-// const DEBOUNCE_DELAY = 300;
 const refs = getRefs();
 const imagesApiService = new ImagesApiService();
 
@@ -20,8 +17,7 @@ function onSearch(e) {
   imagesApiService.query = e.currentTarget.elements.searchQuery.value;
 
   if (imagesApiService.query === '') {
-    onError();
-    return;
+    return onError();
   }
   imagesApiService.resetPage();
   imagesApiService.fetchImages().then(renderGallery);
@@ -29,7 +25,6 @@ function onSearch(e) {
 
 function onLoadMore() {
   imagesApiService.fetchImages().then(renderGallery);
-  lightbox.refresh();
 }
 
 function galleryTpl(gallery) {
@@ -44,55 +39,70 @@ function galleryTpl(gallery) {
         comments,
         downloads,
       }) => {
-        return `<div class="gallery__item">
+        return ` <div class="gallery__item">
+      <div class="img-box">
         <a class="gallery__link" href="${largeImg}">
-        <img class="gallery__image" src="${previewImg}" alt="${tags}" loading="lazy" />
-         </a>
-        <div class="info">
-    ${
-      likes
-        ? `<p class="info-item">
-      <b>Likes: ${likes} </b>
-    </p>`
-        : ''
-    }
-    ${
-      views
-        ? `<p class="info-item">
-      <b>Views: ${views}</b>
-    </p>`
-        : ''
-    }
-    ${
-      comments
-        ? `<p class="info-item">
-      <b>Comments: ${comments}</b>
-    </p>`
-        : ''
-    }
-    ${
-      downloads
-        ? `<p class="info-item">
-      <b>Downloads: ${downloads}</b>
-    </p>`
-        : ''
-    }
-
+          <img
+            class="gallery__image"
+            src="${previewImg}"
+            alt="Tags: ${tags}"
+            loading="lazy"
+          />
+        </a>
+      </div>
+      <div class="info">
+        ${
+          likes
+            ? `
+        <p class="info-item">
+          <b>Likes:   <span class="img-data">${likes}</span> </b>
+        </p>
+        `
+            : ''
+        } ${
+          views
+            ? `
+        <p class="info-item">
+          <b>Views:   <span class="img-data">${views}</span></b>
+        </p>
+        `
+            : ''
+        } ${
+          comments
+            ? `
+        <p class="info-item">
+          <b>Comments:   <span class="img-data">${comments}</span></b>
+        </p>
+        `
+            : ''
+        } ${
+          downloads
+            ? `
+        <p class="info-item">
+          <b>Downloads:   <span class="img-data">${downloads}</span></b>
+        </p>
+        `
+            : ''
+        }
+      </div>
     </div>
-
-</div>`;
+    `;
       }
     )
     .join('');
 }
 
-function renderGallery({ hits: gallery }) {
-  if (gallery.length === 0) {
-    onError();
-    return;
+function renderGallery({ hits: gallery, totalHits }) {
+  if (totalHits === 0) {
+    return onError();
+  } else if (gallery.length === 0) {
+    return onSearchEnd();
   }
   refs.galleryBox.insertAdjacentHTML('beforeend', galleryTpl(gallery));
+
   onLightboxActive();
+  onSuccess(totalHits);
+  // onSearchEnd(totalHits);
 }
 
 function clearGallery() {
@@ -105,23 +115,37 @@ function onError() {
   );
 }
 
+function onSuccess(totalHits) {
+  if (refs.galleryBox.childElementCount > 40) {
+    onSmoothScroll();
+    return;
+  }
+  return Notify.success(`Hooray! We've found ${totalHits} images`);
+}
+
 function onLightboxActive() {
   let lightbox = new SimpleLightbox('.gallery a', {
     captionsData: 'alt',
     captionPosition: 'bottom',
     captionDelay: 250,
   });
+  lightbox.refresh();
 }
 
-// const { height: cardHeight } = document
-//   .querySelector('.gallery')
+function onSmoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
 
-//   .firstElementChild.getBoundingClientRect();
+    .firstElementChild.getBoundingClientRect();
 
-// window.scrollBy({
-//   top: cardHeight * 2,
-//   behavior: 'smooth',
-// });
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
 
-// const imgMarkup = createGalleryImgMarkup(galleryItems);
-// refs.galleryBox.insertAdjacentHTML('beforeend', imgMarkup);
+function onSearchEnd() {
+  return Notify.info(
+    "We're sorry, but you've reached the end of search results."
+  );
+}
