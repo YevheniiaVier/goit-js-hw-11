@@ -1,25 +1,34 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import LoadMoreBtn from './js/load-more-btn';
 
 import ImagesApiService from './js/images-service';
 import { getRefs } from './js/get-refs';
 
 const refs = getRefs();
+const loadMoreBtn = new LoadMoreBtn({
+  selector: '[data-action="load-more"]',
+  hidden: true,
+});
+
 const imagesApiService = new ImagesApiService();
 
 refs.searchForm.addEventListener('submit', onSearch);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
+loadMoreBtn.refs.button.addEventListener('click', onLoadMore);
 
 function onSearch(e) {
   e.preventDefault();
   clearGallery();
-  imagesApiService.query = e.currentTarget.elements.searchQuery.value;
+  loadMoreBtn.hide();
+  imagesApiService.query = e.currentTarget.elements.searchQuery.value.trim();
 
   if (imagesApiService.query === '') {
     return onError();
   }
+
   imagesApiService.resetPage();
+
   imagesApiService.fetchImages().then(renderGallery);
 }
 
@@ -55,7 +64,7 @@ function galleryTpl(gallery) {
           likes
             ? `
         <p class="info-item">
-          <b>Likes:   <span class="img-data">${likes}</span> </b>
+          <b>Likes <span class="img-data">${likes}</span> </b>
         </p>
         `
             : ''
@@ -63,7 +72,7 @@ function galleryTpl(gallery) {
           views
             ? `
         <p class="info-item">
-          <b>Views:   <span class="img-data">${views}</span></b>
+          <b>Views <span class="img-data">${views}</span></b>
         </p>
         `
             : ''
@@ -71,7 +80,7 @@ function galleryTpl(gallery) {
           comments
             ? `
         <p class="info-item">
-          <b>Comments:   <span class="img-data">${comments}</span></b>
+          <b>Comments <span class="img-data">${comments}</span></b>
         </p>
         `
             : ''
@@ -79,7 +88,7 @@ function galleryTpl(gallery) {
           downloads
             ? `
         <p class="info-item">
-          <b>Downloads:   <span class="img-data">${downloads}</span></b>
+          <b>Downloads <span class="img-data">${downloads}</span></b>
         </p>
         `
             : ''
@@ -102,7 +111,6 @@ function renderGallery({ hits: gallery, totalHits }) {
 
   onLightboxActive();
   onSuccess(totalHits);
-  // onSearchEnd(totalHits);
 }
 
 function clearGallery() {

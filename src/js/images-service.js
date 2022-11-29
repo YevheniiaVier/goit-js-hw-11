@@ -1,5 +1,10 @@
 import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import LoadMoreBtn from './load-more-btn';
+export const loadMoreBtn = new LoadMoreBtn({
+  selector: '[data-action="load-more"]',
+  hidden: true,
+});
 
 const API_KEY = '31477938-fd248c01ea14c0dbe5bfc1d84';
 const BASE_URL = 'https://pixabay.com/api';
@@ -9,11 +14,18 @@ export default class ImagesApiService {
     this.searchQuery = '';
     this.page = 1;
   }
+
   async fetchImages() {
+    loadMoreBtn.show();
+
     try {
+      loadMoreBtn.disable();
       const url = `${BASE_URL}/?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=40`;
       const response = await axios.get(url);
+
+      loadMoreBtn.enable();
       this.incrementPage();
+
       return response.data;
     } catch (error) {
       return Notify.failure(

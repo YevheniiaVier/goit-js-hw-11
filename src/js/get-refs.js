@@ -4,6 +4,5 @@ export function getRefs() {
     searchInput: document.querySelector('[name="searchQuery"]'),
     searchBtn: document.querySelector('.search__btn'),
     galleryBox: document.querySelector('.gallery'),
-    loadMoreBtn: document.querySelector('.load-more'),
   };
 }
