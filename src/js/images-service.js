@@ -1,10 +1,7 @@
 import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import LoadMoreBtn from './load-more-btn';
-export const loadMoreBtn = new LoadMoreBtn({
-  selector: '[data-action="load-more"]',
-  hidden: true,
-});
+
+import { loadMoreBtn } from '../index';
 
 const API_KEY = '31477938-fd248c01ea14c0dbe5bfc1d84';
 const BASE_URL = 'https://pixabay.com/api';

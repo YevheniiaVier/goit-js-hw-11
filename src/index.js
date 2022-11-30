@@ -7,7 +7,7 @@ import ImagesApiService from './js/images-service';
 import { getRefs } from './js/get-refs';
 
 const refs = getRefs();
-const loadMoreBtn = new LoadMoreBtn({
+export const loadMoreBtn = new LoadMoreBtn({
   selector: '[data-action="load-more"]',
   hidden: true,
 });
@@ -20,7 +20,7 @@ loadMoreBtn.refs.button.addEventListener('click', onLoadMore);
 function onSearch(e) {
   e.preventDefault();
   clearGallery();
-  loadMoreBtn.hide();
+
   imagesApiService.query = e.currentTarget.elements.searchQuery.value.trim();
 
   if (imagesApiService.query === '') {
@@ -103,14 +103,17 @@ function galleryTpl(gallery) {
 
 function renderGallery({ hits: gallery, totalHits }) {
   if (totalHits === 0) {
+    loadMoreBtn.hide();
     return onError();
-  } else if (gallery.length === 0) {
-    return onSearchEnd();
   }
   refs.galleryBox.insertAdjacentHTML('beforeend', galleryTpl(gallery));
 
   onLightboxActive();
   onSuccess(totalHits);
+  if (gallery.length < 40) {
+    loadMoreBtn.hide();
+    return onSearchEnd();
+  }
 }
 
 function clearGallery() {
@@ -128,6 +131,7 @@ function onSuccess(totalHits) {
     onSmoothScroll();
     return;
   }
+
   return Notify.success(`Hooray! We've found ${totalHits} images`);
 }
 
